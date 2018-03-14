@@ -6,7 +6,7 @@ all: lint test coverage
 
 # Tests
 test:
-	@$(ISTANBUL) cover --report lcov --report text --report html _mocha
+	@$(ISTANBUL) cover --report lcov --report text --report html $(MOCHA)
 
 # Check code style
 lint:
@@ -23,4 +23,3 @@ clean-cov:
 	@rm -rf coverage
 
 .PHONY: all test lint coverage clean clean-cov
-
