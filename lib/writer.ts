@@ -2,6 +2,10 @@
 
 var _ = require('lodash');
 
+export default class Writer {
+    //
+}
+
 function Writer(options) {
     var self = this;
 

@@ -1,13 +1,13 @@
 'use strict';
 
-var Long   = require('long');
-var varint = require('./protobuf/varint');
-var Reader = require('./reader');
-var Writer = require('./writer');
-var _      = require('lodash');
-var util   = require('util');
+import Long from 'long'
+import varint from 'protobuf/varint'
+import Reader from 'reader'
+import Writer from 'writer'
+import _ from 'lodash'
+import util from 'util'
 
-var primitives = [
+const primitives = [
     ['Int8', 1],
     ['UInt8', 1],
     ['Int16LE', 2],
@@ -29,7 +29,15 @@ function Protocol() {}
 Protocol.Reader_ = Reader;
 Protocol.Writer_ = Writer;
 
-Protocol.prototype.define = function (name, config, namespace) {
+export type ReaderFunction = (...args: any) => any;
+export type WriterFunction = (value?: any) => any;
+
+interface DefineTypeConfig {
+    read: ReaderFunction;
+    write: WriterFunction;
+}
+
+Protocol.prototype.define = function (name: string, config: DefineTypeConfig, namespace: string) {
     if (config.read) {
         this.reader.define(name, config.read, namespace);
     }
@@ -46,7 +54,7 @@ Protocol.prototype.write = function () {
     return this.writer.reset();
 };
 
-function define(name, config, namespace) {
+function define(name: string, config: DefineTypeConfig, namespace?: string) {
     Reader.define(name, config.read, namespace);
     Writer.define(name, config.write, namespace);
 }
@@ -102,7 +110,7 @@ primitives.forEach(function (p) {
             this.offset += p[1];
             return r;
         },
-        write: function (value) {
+        write: function (this: Writer, value) {
             var r;
             this.demand(p[1]);
             r = this.buffer['write' + p[0]](value, this.offset);
@@ -113,7 +121,7 @@ primitives.forEach(function (p) {
 });
 
 define('raw', {
-    read: function (bytes) {
+    read: function (this: Reader, bytes: number) {
         var r;
         this.demand(bytes);
         r = new Buffer(bytes);
@@ -121,7 +129,7 @@ define('raw', {
         this.offset += bytes;
         return r;
     },
-    write: function (buffer) {
+    write: function (this: Writer, buffer) {
         if (typeof buffer === 'string' || Array.isArray(buffer)) {
             buffer = new Buffer(buffer);
         }
@@ -132,12 +140,12 @@ define('raw', {
 });
 
 define('Int64BE', {
-    read: function () {
+    read: function (this: Reader) {
         var l = new Long(this.buffer.readInt32BE(this.offset + 4), this.buffer.readInt32BE(this.offset));
         this.offset += 8;
         return l;
     },
-    write: function (value) {
+    write: function (this: Writer, value) {
         this.demand(8);
         value = Long.fromValue(value);
         this.buffer.writeInt32BE(value.getHighBits(), this.offset);
@@ -147,12 +155,12 @@ define('Int64BE', {
 });
 
 define('Int64LE', {
-    read: function () {
+    read: function (this: Reader) {
         var l = new Long(this.buffer.readInt32LE(this.offset), this.buffer.readInt32LE(this.offset + 4));
         this.offset += 8;
         return l;
     },
-    write: function (value) {
+    write: function (this: Writer, value) {
         this.demand(8);
         value = Long.fromValue(value);
         this.buffer.writeInt32LE(value.getHighBits(), this.offset + 4);
@@ -162,12 +170,12 @@ define('Int64LE', {
 });
 
 define('UInt64BE', {
-    read: function () {
+    read: function (this: Reader) {
         var l = new Long(this.buffer.readUInt32BE(this.offset + 4), this.buffer.readUInt32BE(this.offset), true);
         this.offset += 8;
         return l;
     },
-    write: function (value) {
+    write: function (this: Writer, value) {
         this.demand(8);
         value = Long.fromValue(value);
         this.buffer.writeUInt32BE(value.getHighBitsUnsigned(), this.offset);
@@ -177,15 +185,15 @@ define('UInt64BE', {
 });
 
 define('UInt64LE', {
-    read: function () {
+    read: function (this: Reader) {
         var l = new Long(this.buffer.readUInt32LE(this.offset), this.buffer.readUInt32LE(this.offset + 4), true);
         this.offset += 8;
         return l;
     },
-    write: function (value) {
+    write: function (this: Writer, value) {
         this.demand(8);
         value = Long.fromValue(value);
-        this.buffer.writeUInt32LE(value.getHighBitsUnsigned(), this.offset + 4);
+        (.buffer.writeUInt32LE(value.getHighBitsUnsigned(), this.offset + 4);
         this.buffer.writeUInt32LE(value.getLowBitsUnsigned(), this.offset);
         this.offset += 8;
     }
@@ -193,12 +201,12 @@ define('UInt64LE', {
 
 // unsigned varint
 define('UVarint', {
-    read: function () {
+    read: function (this: Reader) {
         var v = varint.read(this.buffer, this.offset);
         this.offset += v.length;
         return v.value;
     },
-    write: function (value) {
+    write: function (this: Writer, value) {
         this.demand(5);
         this.offset += varint.write(this.buffer, value, this.offset);
     }
@@ -206,7 +214,7 @@ define('UVarint', {
 
 // normal signed varint
 define('Varint', {
-    read: function () {
+    read: function (this: Reader) {
         return this.UVarint().context | 0;
     },
     // should be 10 bytes long
@@ -214,7 +222,7 @@ define('Varint', {
     // Quote: "If you use int32 or int64 as the type for a negative number, the resulting varint is always ten bytes long – it is,
     // effectively, treated like a very large unsigned integer.
     // If you use one of the signed types, the resulting varint uses ZigZag encoding, which is much more efficient."
-    write: function (value) {
+    write: function (this: Writer, value) {
         if (value < 0) {
             this.demand(10);
             this.UVarint64(value);
@@ -227,10 +235,10 @@ define('Varint', {
 
 // zigzag encoded signed varint
 define('SVarint', {
-    read: function () {
+    read: function (this: Reader) {
         return varint.dezigzag(this.UVarint().context);
     },
-    write: function (value) {
+    write: function (this: Writer, value) {
         this.demand(5);
         this.UVarint(varint.zigzag(value));
     }
@@ -238,12 +246,12 @@ define('SVarint', {
 
 // unsigned varint 64 bit
 define('UVarint64', {
-    read: function () {
+    read: function (this: Reader) {
         var v = varint.read64(this.buffer, this.offset);
         this.offset += v.length;
         return v.value;
     },
-    write: function (value) {
+    write: function (this: Writer, this: writer, value) {
         this.demand(10);
         value = Long.fromValue(value);
         this.offset += varint.write64(this.buffer, value, this.offset);
@@ -252,10 +260,10 @@ define('UVarint64', {
 
 // normal signed varint 64 bit
 define('Varint64', {
-    read: function () {
+    read: function (this: Reader) {
         return this.UVarint64().context.toSigned();
     },
-    write: function (value) {
+    write: function (this: Writer, value) {
         this.demand(10);
         this.UVarint64(value);
     }
@@ -263,10 +271,10 @@ define('Varint64', {
 
 // zigzag encoded signed varint 64
 define('SVarint64', {
-    read: function () {
+    read: function (this: Reader) {
         return varint.dezigzag64(this.UVarint64().context);
     },
-    write: function (value) {
+    write: function (this: Writer, value) {
         this.demand(10);
         value = Long.fromValue(value);
         this.UVarint64(varint.zigzag64(value));
