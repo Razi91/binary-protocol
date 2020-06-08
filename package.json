@@ -1,48 +1,49 @@
 {
-  "name": "bin-protocol",
-  "description": "buffer maker and parser for binary protocols",
-  "homepage": "http://github.com/oleksiyk/binary-protocol",
-  "author": {
-    "name": "Oleksiy Krivoshey",
-    "email": "oleksiyk@gmail.com"
-  },
-  "version": "3.1.1",
-  "main": "./lib/index.js",
-  "keywords": [
-    "buffer",
-    "raw",
-    "binary",
-    "protocol",
-    "parser",
-    "reader",
-    "builder"
-  ],
-  "dependencies": {
-    "@types/long": "^4.0.1",
-    "lodash": "^4.17.11",
-    "long": "^4.0.0",
-    "protocol-buffers-schema": "^3.0.0"
-  },
-  "devDependencies": {
-    "@types/lodash": "^4.14.155",
-    "@types/node": "^14.0.11",
-    "chai": "^3.5.0",
-    "eslint": "^2.13.1",
-    "eslint-config-magictoolbox": "^0.0.2",
-    "eslint-plugin-react": "^6.10.3",
-    "istanbul": "^0.4.2",
-    "mocha": "^3.1.2"
-  },
-  "bugs": {
-    "url": "https://github.com/oleksiyk/binary-protocol/issues"
-  },
-  "scripts": {
-    "test": "make"
-  },
-  "repository": {
-    "type": "git",
-    "url": "http://github.com/oleksiyk/binary-protocol.git"
-  },
-  "readmeFilename": "README.md",
-  "license": "MIT"
+    "name": "bin-protocol",
+    "description": "buffer maker and parser for binary protocols",
+    "homepage": "http://github.com/oleksiyk/binary-protocol",
+    "author": {
+        "name": "Oleksiy Krivoshey",
+        "email": "oleksiyk@gmail.com"
+    },
+    "version": "3.1.1",
+    "main": "./lib/index.js",
+    "keywords": [
+        "buffer",
+        "raw",
+        "binary",
+        "protocol",
+        "parser",
+        "reader",
+        "builder"
+    ],
+    "dependencies": {
+        "@types/long": "^4.0.1",
+        "lodash": "^4.17.11",
+        "long": "^4.0.0",
+        "protocol-buffers-schema": "^3.0.0"
+    },
+    "devDependencies": {
+        "@types/lodash": "^4.14.155",
+        "@types/node": "^14.0.11",
+        "chai": "^3.5.0",
+        "eslint": "^2.13.1",
+        "eslint-config-magictoolbox": "^0.0.2",
+        "eslint-plugin-react": "^6.10.3",
+        "istanbul": "^0.4.2",
+        "mocha": "^3.1.2"
+    },
+    "bugs": {
+        "url": "https://github.com/oleksiyk/binary-protocol/issues"
+    },
+    "scripts": {
+        "lint": "eslint lib/**/*.ts",
+        "test": "istanbul cover --report lcov --report text --report html _mocha"
+    },
+    "repository": {
+        "type": "git",
+        "url": "http://github.com/oleksiyk/binary-protocol.git"
+    },
+    "readmeFilename": "README.md",
+    "license": "MIT"
 }
