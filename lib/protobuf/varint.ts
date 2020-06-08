@@ -1,12 +1,10 @@
-'use strict';
+import Long from 'long'
 
-var Long = require('long');
-
-exports.dezigzag = function (value) {
+export function dezigzag (value: number) {
     return (value >>> 1) ^ -(value & 1);
 };
 
-exports.read = function (buffer, offset) {
+export function read (buffer: Buffer, offset: number) {
     var byte;
     var result = 0;
     var position = offset || 0;
@@ -29,11 +27,11 @@ exports.read = function (buffer, offset) {
     return { length: (position - offset), value: result >>> 0 };
 };
 
-exports.dezigzag64 = function (value) {
+export function dezigzag64 (value: Long) {
     return value.toSigned().shiftRightUnsigned(1).xor(value.and(Long.fromNumber(1)).negate());
 };
 
-exports.read64 = function (buffer, offset) {
+export function read64 (buffer: Buffer, offset: number) {
     var byte;
     var result = Long.ZERO;
     var position = offset || 0;
@@ -54,11 +52,11 @@ exports.read64 = function (buffer, offset) {
     return { length: (position - offset), value: result.toUnsigned() };
 };
 
-exports.zigzag = function (value) {
+export  function zigzag (value: number) {
     return (value << 1) ^ (value >> 31);
 };
 
-exports.write = function (buffer, number, offset) {
+export  function write (buffer: Buffer, number: number, offset: number) {
     var position = offset || 0;
 
     offset = offset || 0;
@@ -76,19 +74,18 @@ exports.write = function (buffer, number, offset) {
     return position - offset + 1;
 };
 
-exports.zigzag64 = function (value) {
+export function zigzag64 (value: Long) {
     return value.shiftLeft(1).xor(value.shiftRight(63));
 };
 
-exports.write64 = function (buffer, number, offset) {
-    var position = offset || 0;
-    var L1 = Long.fromNumber(~0x7F);
-    var L2 = Long.fromNumber(0xFF);
-    var L3 = Long.fromNumber(0x80);
+export function write64 (buffer: Buffer, _number: Long, _offset: number) {
+    var position = _offset || 0;
+    const L1 = Long.fromNumber(~0x7F);
+    const L2 = Long.fromNumber(0xFF);
+    const L3 = Long.fromNumber(0x80);
 
-    offset = offset || 0;
-
-    number = number.toUnsigned();
+    const offset = _offset || 0;
+    let number = _number.toUnsigned();
 
     while (number.and(L1).greaterThan(Long.ZERO)) {
         buffer[position] = number.and(L2).or(L3).toNumber();

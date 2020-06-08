@@ -1,5 +1,3 @@
-'use strict';
-
 import Long from 'long'
 import varint from 'protobuf/varint'
 import Reader from 'reader'
@@ -24,39 +22,40 @@ const primitives = [
     ['DoubleBE', 8]
 ];
 
-function Protocol() {}
-
-Protocol.Reader_ = Reader;
-Protocol.Writer_ = Writer;
 
 export type ReaderFunction = (...args: any) => any;
-export type WriterFunction = (value?: any) => any;
+export type WriterFunction = (value?: any, ...args: any) => any;
 
 interface DefineTypeConfig {
     read: ReaderFunction;
     write: WriterFunction;
 }
 
-Protocol.prototype.define = function (name: string, config: DefineTypeConfig, namespace: string) {
-    if (config.read) {
-        this.reader.define(name, config.read, namespace);
+class Protocol {
+    static Reader_ = Reader;
+    static Writer_ = Writer;
+
+    define (name: string, config: DefineTypeConfig, namespace: string) {
+        if (config.read) {
+            this.reader.define(name, config.read, namespace);
+        }
+        if (config.write) {
+            this.writer.define(name, config.write, namespace);
+        }
+    };
+
+    read (buffer: Buffer) {
+        return this.reader.reset(buffer);
+    };
+
+    write () {
+        return this.writer.reset();
+    };
+
+    static define(name: string, config: DefineTypeConfig, namespace?: string) {
+        Reader.define(name, config.read, namespace);
+        Writer.define(name, config.write, namespace);
     }
-    if (config.write) {
-        this.writer.define(name, config.write, namespace);
-    }
-};
-
-Protocol.prototype.read = function (buffer) {
-    return this.reader.reset(buffer);
-};
-
-Protocol.prototype.write = function () {
-    return this.writer.reset();
-};
-
-function define(name: string, config: DefineTypeConfig, namespace?: string) {
-    Reader.define(name, config.read, namespace);
-    Writer.define(name, config.write, namespace);
 }
 
 function createProtocol(_SuperProtocol, constructor) {
@@ -281,5 +280,6 @@ define('SVarint64', {
     }
 });
 
-module.exports = createProtocol(Protocol);
+export default createProtocol(Protocol);
+
 module.exports.createProtobufProtocol = require('./protobuf');
